@@ -7,7 +7,7 @@
     "exported_at": "2025-11-04T13:00:00-06:00",
     "name": "MohistMC",
     "author": "fsosa",
-    "description": "Enhanced Mohist Minecraft Server egg supporting multiple versions (1.7.10, 1.12.2, 1.16.5, 1.18.2, 1.19.2, 1.19.4, 1.20.1, 1.20.2, 1.21.1, 1.21.4). Combines Minecraft Forge with Spigot/Paper plugin support for the ultimate modded server experience.",
+    "description": "Enhanced Mohist Minecraft Server egg supporting multiple versions (1.12.2, 1.16.5, 1.18.2, 1.19.2, 1.19.4, 1.20.1, 1.20.2, 1.21.1, 1.21.4). Combines Minecraft Forge with Spigot/Paper plugin support for the ultimate modded server experience.",
     "features": [
         "eula",
         "java_version",
