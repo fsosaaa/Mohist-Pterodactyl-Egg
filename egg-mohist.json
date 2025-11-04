@@ -1,36 +1,119 @@
 {
-    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL - PTERODACTYL.IO",
+    "_comment": "Mohist Multi-Version Egg for Pterodactyl Panel - Enhanced Version",
     "meta": {
-        "version": "PTDL_v1"
+        "version": "PTDL_v2",
+        "update_url": null
     },
-    "exported_at": "2020-07-28T18:16:04+02:00",
-    "name": "Mohist",
-    "author": "tgggcraft83@gmail.com",
-    "description": "Here is the mohist egg",
-    "image": "quay.io\/pterodactyl\/core:java",
-    "startup": "java -Xms128M -Xmx{{SERVER_MEMORY}}M -jar {{SERVER_JARFILE}}",
+    "exported_at": "2025-11-04T13:00:00-06:00",
+    "name": "MohistMC",
+    "author": "fsosa",
+    "description": "Enhanced Mohist Minecraft Server egg supporting multiple versions (1.7.10, 1.12.2, 1.16.5, 1.18.2, 1.19.2, 1.19.4, 1.20.1, 1.20.2, 1.21.1, 1.21.4). Combines Minecraft Forge with Spigot/Paper plugin support for the ultimate modded server experience.",
+    "features": [
+        "eula",
+        "java_version",
+        "pid_limit"
+    ],
+    "docker_images": {
+        "Java 21": "ghcr.io/pterodactyl/yolks:java_21",
+        "Java 17": "ghcr.io/pterodactyl/yolks:java_17",
+        "Java 11": "ghcr.io/pterodactyl/yolks:java_11",
+        "Java 8": "ghcr.io/pterodactyl/yolks:java_8"
+    },
+    "file_denylist": [],
+    "startup": "java -Xms{{START_MEMORY}}M -XX:MaxRAMPercentage=95.0 -Dterminal.jline=false -Dterminal.ansi=true {{JAVA_ARGS}} -jar {{SERVER_JARFILE}} {{SERVER_ARGS}}",
     "config": {
-        "files": "{\r\n    \"server.properties\": {\r\n        \"parser\": \"properties\",\r\n        \"find\": {\r\n            \"server-ip\": \"0.0.0.0\",\r\n            \"enable-query\": \"true\",\r\n            \"server-port\": \"{{server.build.default.port}}\",\r\n            \"query.port\": \"{{server.build.default.port}}\"\r\n        }\r\n    }\r\n}",
-        "startup": "{\r\n    \"done\": \")! For help, type \",\r\n    \"userInteraction\": [\r\n        \"Go to eula.txt for more info.\"\r\n    ]\r\n}",
-        "logs": "{\r\n    \"custom\": false,\r\n    \"location\": \"logs\/latest.log\"\r\n}",
+        "files": "{\r\n    \"server.properties\": {\r\n        \"parser\": \"properties\",\r\n        \"find\": {\r\n            \"server-ip\": \"0.0.0.0\",\r\n            \"server-port\": \"{{server.build.default.port}}\",\r\n            \"query.port\": \"{{server.build.default.port}}\",\r\n            \"enable-query\": \"true\",\r\n            \"rcon.port\": \"{{server.build.default.port}}\",\r\n            \"rcon.password\": \"{{env.RCON_PASS}}\"\r\n        }\r\n    }\r\n}",
+        "startup": "{\r\n    \"done\": \")! For help, type \",\r\n    \"userInteraction\": [\r\n        \"Go to eula.txt for more info.\",\r\n        \"You need to agree to the EULA\"\r\n    ]\r\n}",
+        "logs": "{\r\n    \"custom\": false,\r\n    \"location\": \"logs/latest.log\"\r\n}",
         "stop": "stop"
     },
     "scripts": {
         "installation": {
-            "script": "#!\/bin\/ash\r\n# Mohist Installation Script\r\n#\r\n# Server Files: \/mnt\/server\r\nrm -rf \/mnt\/server\r\n\r\napk update\r\napk add curl\r\n\r\ncd \/mnt\/server\r\n\r\necho -e \"\\nDownloading Mohist\\n\"\r\n\r\ncurl -sS https:\/\/ci.codemc.io\/job\/Mohist-Community\/job\/Mohist-1.12.2\/639\/artifact\/build\/distributions\/Mohist-1.12.2-b69b720-server.jar -o $SERVER_JARFILE\r\n\r\ncurl -sS https:\/\/launcher.mojang.com\/v1\/objects\/886945bfb2b978778c3a0288fd7fab09d315b25f\/server.jar -o minecraft_server.1.12.2.jar",
-            "container": "openjdk:8-alpine",
-            "entrypoint": "ash"
+            "script": "#!/bin/bash\r\n# Enhanced Mohist Installation Script\r\n# Supports multiple Minecraft versions with improved error handling\r\n#\r\n# Server Files: /mnt/server\r\n\r\nset -e  # Exit on any error\r\n\r\n# Color codes for better output\r\nRED='\\033[0;31m'\r\nGREEN='\\033[0;32m'\r\nYELLOW='\\033[0;33m'\r\nBLUE='\\033[0;34m'\r\nNC='\\033[0m' # No Color\r\n\r\n# Logging functions\r\nlog_info() {\r\n    echo -e \"${BLUE}[INFO]${NC} $1\"\r\n}\r\n\r\nlog_success() {\r\n    echo -e \"${GREEN}[SUCCESS]${NC} $1\"\r\n}\r\n\r\nlog_warning() {\r\n    echo -e \"${YELLOW}[WARNING]${NC} $1\"\r\n}\r\n\r\nlog_error() {\r\n    echo -e \"${RED}[ERROR]${NC} $1\"\r\n}\r\n\r\n# Update system and install dependencies\r\nlog_info \"Updating system and installing dependencies...\"\r\napt update -qq\r\napt install -y curl jq wget unzip dos2unix > /dev/null 2>&1\r\n\r\n# Ensure server directory exists\r\nif [[ ! -d /mnt/server ]]; then\r\n    mkdir -p /mnt/server\r\nfi\r\n\r\ncd /mnt/server\r\n\r\n# Clean variables\r\nMC_VERSION=\"$(echo \"$MC_VERSION\" | tr -d ' ')\"\r\nBUILD_TYPE=\"$(echo \"$BUILD_TYPE\" | tr -d ' ')\"\r\nMOHIST_VERSION=\"$(echo \"$MOHIST_VERSION\" | tr -d ' ')\"\r\n\r\n# Add .jar extension if missing\r\nif [[ ! $SERVER_JARFILE == *.jar ]]; then\r\n    SERVER_JARFILE=\"$SERVER_JARFILE.jar\"\r\nfi\r\n\r\n# Version compatibility check\r\nSUPPORTED_VERSIONS=(\"1.7.10\" \"1.12.2\" \"1.16.5\" \"1.18.2\" \"1.19.2\" \"1.19.4\" \"1.20.1\" \"1.20.2\" \"1.21.1\" \"1.21.4\")\r\n\r\nif [[ ! \" ${SUPPORTED_VERSIONS[*]} \" =~ \" ${MC_VERSION} \" ]]; then\r\n    log_error \"Minecraft version ${MC_VERSION} is not supported by this egg.\"\r\n    log_info \"Supported versions: ${SUPPORTED_VERSIONS[*]}\"\r\n    exit 1\r\nfi\r\n\r\n# Java version recommendation\r\ncase \"$MC_VERSION\" in\r\n    \"1.7.10\"|\"1.12.2\")\r\n        RECOMMENDED_JAVA=\"Java 8\"\r\n        ;;\r\n    \"1.16.5\"|\"1.18.2\")\r\n        RECOMMENDED_JAVA=\"Java 11 or Java 17\"\r\n        ;;\r\n    \"1.19.2\"|\"1.19.4\"|\"1.20.1\"|\"1.20.2\")\r\n        RECOMMENDED_JAVA=\"Java 17\"\r\n        ;;\r\n    \"1.21.1\"|\"1.21.4\")\r\n        RECOMMENDED_JAVA=\"Java 21\"\r\n        ;;\r\n    *)\r\n        RECOMMENDED_JAVA=\"Java 17 or newer\"\r\n        ;;\r\nesac\r\n\r\nlog_info \"=== Mohist Installation Started ===\"\r\nlog_info \"Minecraft Version: ${MC_VERSION}\"\r\nlog_info \"Build Type: ${BUILD_TYPE}\"\r\nlog_info \"Mohist Version: ${MOHIST_VERSION:-'Auto-detect'}\"\r\nlog_info \"Server Jar: ${SERVER_JARFILE}\"\r\nlog_info \"Recommended Java: ${RECOMMENDED_JAVA}\"\r\necho \"\"\r\n\r\n# Construct download URL\r\nif [[ -n \"${MOHIST_VERSION}\" ]]; then\r\n    # Use specific version\r\n    DOWNLOAD_URLS=(\r\n        \"https://mohistmc.com/api/${MC_VERSION}/${MOHIST_VERSION}/download\"\r\n        \"https://maven.mohistmc.com/com/mohistmc/mohist/${MOHIST_VERSION}/mohist-${MOHIST_VERSION}.jar\"\r\n    )\r\n    log_info \"Using specific Mohist version: ${MOHIST_VERSION}\"\r\nelse\r\n    # Validate build type\r\n    if [[ \"${BUILD_TYPE}\" != \"recommended\" ]] && [[ \"${BUILD_TYPE}\" != \"latest\" ]]; then\r\n        BUILD_TYPE=\"latest\"\r\n        log_warning \"Invalid build type, defaulting to: ${BUILD_TYPE}\"\r\n    fi\r\n    \r\n    DOWNLOAD_URLS=(\r\n        \"https://mohistmc.com/api/${MC_VERSION}/${BUILD_TYPE}/download\"\r\n        \"https://mohistmc.com/builds/${MC_VERSION}/latest/mohist-${MC_VERSION}-latest.jar\"\r\n        \"https://maven.mohistmc.com/com/mohistmc/mohist/${MC_VERSION}-latest/mohist-${MC_VERSION}-latest.jar\"\r\n        \"https://ci.codemc.io/job/Mohist-Community/job/Mohist-${MC_VERSION}/lastSuccessfulBuild/artifact/build/distributions/mohist-${MC_VERSION}-server.jar\"\r\n    )\r\n    log_info \"Using build type: ${BUILD_TYPE}\"\r\nfi\r\n\r\n# Try downloading from multiple sources\r\nDOWNLOAD_SUCCESS=false\r\n\r\nfor DOWNLOAD_URL in \"${DOWNLOAD_URLS[@]}\"; do\r\n    log_info \"Attempting download from: ${DOWNLOAD_URL}\"\r\n    \r\n    # Check if URL is accessible\r\n    if curl --output /dev/null --silent --head --fail --connect-timeout 10 \"${DOWNLOAD_URL}\"; then\r\n        log_info \"URL is accessible, starting download...\"\r\n        \r\n        # Download with progress and retry\r\n        if curl -L --fail --retry 3 --retry-delay 2 --connect-timeout 10 --max-time 300 \\\r\n               --progress-bar -o \"${SERVER_JARFILE}\" \"${DOWNLOAD_URL}\"; then\r\n            \r\n            # Verify download\r\n            if [[ -f \"${SERVER_JARFILE}\" ]]; then\r\n                FILE_SIZE=$(stat -c%s \"${SERVER_JARFILE}\" 2>/dev/null || stat -f%z \"${SERVER_JARFILE}\" 2>/dev/null || echo 0)\r\n                \r\n                if [[ \"$FILE_SIZE\" -gt 10485760 ]]; then  # 10MB minimum\r\n                    # Check if it's actually a jar file\r\n                    if file \"${SERVER_JARFILE}\" | grep -q \"Java archive\" || \\\r\n                       file \"${SERVER_JARFILE}\" | grep -q \"Zip archive\" || \\\r\n                       [[ \"${SERVER_JARFILE}\" == *.jar ]]; then\r\n                        log_success \"Successfully downloaded ${SERVER_JARFILE} (${FILE_SIZE} bytes)\"\r\n                        DOWNLOAD_SUCCESS=true\r\n                        break\r\n                    else\r\n                        log_warning \"Downloaded file doesn't appear to be a valid JAR file\"\r\n                        rm -f \"${SERVER_JARFILE}\"\r\n                    fi\r\n                else\r\n                    log_warning \"Downloaded file is too small (${FILE_SIZE} bytes)\"\r\n                    rm -f \"${SERVER_JARFILE}\"\r\n                fi\r\n            fi\r\n        else\r\n            log_warning \"Download failed from this URL\"\r\n        fi\r\n    else\r\n        log_warning \"URL is not accessible\"\r\n    fi\r\ndone\r\n\r\nif [[ \"${DOWNLOAD_SUCCESS}\" != true ]]; then\r\n    log_error \"Failed to download Mohist from all available sources!\"\r\n    log_error \"Please check:\"\r\n    log_error \"1. Your internet connection\"\r\n    log_error \"2. If Mohist version ${MC_VERSION} is still supported\"\r\n    log_error \"3. Visit https://mohistmc.com for latest information\"\r\n    exit 2\r\nfi\r\n\r\n# Create essential files\r\nlog_info \"Setting up server files...\"\r\n\r\n# Create eula.txt\r\nif [[ ! -f \"eula.txt\" ]]; then\r\n    echo \"# By changing the setting below to TRUE you are indicating your agreement to our EULA (https://aka.ms/MinecraftEULA).\" > eula.txt\r\n    echo \"# $(date)\" >> eula.txt\r\n    echo \"eula=false\" >> eula.txt\r\n    log_info \"Created eula.txt (remember to accept EULA)\"\r\nfi\r\n\r\n# Create basic server.properties if it doesn't exist\r\nif [[ ! -f \"server.properties\" ]]; then\r\n    cat > server.properties << EOF\r\n# Minecraft server properties\r\n# $(date)\r\nserver-name=Mohist Server\r\ngamemode=survival\r\ndifficulty=easy\r\nallow-flight=false\r\nmax-players=20\r\nonline-mode=true\r\nwhite-list=false\r\nserver-ip=0.0.0.0\r\nserver-port=25565\r\nEOF\r\n    log_info \"Created basic server.properties\"\r\nfi\r\n\r\n# Create directories\r\nmkdir -p logs mods plugins config libraries\r\nlog_info \"Created necessary directories\"\r\n\r\n# Version-specific setup\r\ncase \"$MC_VERSION\" in\r\n    \"1.7.10\"|\"1.12.2\")\r\n        log_info \"Setting up for legacy Minecraft version\"\r\n        ;;\r\n    \"1.16.5\"|\"1.18.2\"|\"1.19.2\"|\"1.19.4\")\r\n        log_info \"Setting up for modern Minecraft version\"\r\n        ;;\r\n    \"1.20.1\"|\"1.20.2\"|\"1.21.1\"|\"1.21.4\")\r\n        log_info \"Setting up for latest Minecraft version\"\r\n        # Create run.bat and run.sh for convenience\r\n        echo \"@echo off\" > run.bat\r\n        echo \"java -Xmx2G -Xms1G -jar ${SERVER_JARFILE} nogui\" >> run.bat\r\n        echo \"pause\" >> run.bat\r\n        \r\n        echo \"#!/bin/bash\" > run.sh\r\n        echo \"java -Xmx2G -Xms1G -jar ${SERVER_JARFILE} nogui\" >> run.sh\r\n        chmod +x run.sh\r\n        ;;\r\nesac\r\n\r\n# Create informational files\r\ncat > MOHIST_INFO.txt << EOF\r\n==================================\r\n    MOHIST SERVER INFORMATION\r\n==================================\r\n\r\nMinecraft Version: ${MC_VERSION}\r\nMohist Build: ${BUILD_TYPE}\r\nServer Jar: ${SERVER_JARFILE}\r\nInstallation Date: $(date)\r\nRecommended Java: ${RECOMMENDED_JAVA}\r\n\r\nIMPORTANT NOTES:\r\n- Remember to accept the EULA in eula.txt\r\n- Place Forge mods in the 'mods' folder\r\n- Place Bukkit/Spigot plugins in the 'plugins' folder\r\n- Configure server settings in server.properties\r\n- Check logs/latest.log for server output\r\n\r\nUseful Links:\r\n- Mohist: https://mohistmc.com\r\n- Documentation: https://github.com/MohistMC/Mohist\r\n- Support: https://discord.gg/mohist\r\n\r\n==================================\r\nEOF\r\n\r\nlog_success \"=== Installation Completed Successfully! ===\"\r\nlog_success \"Server jar: ${SERVER_JARFILE}\"\r\nlog_success \"Minecraft version: ${MC_VERSION}\"\r\nlog_success \"Recommended Java version: ${RECOMMENDED_JAVA}\"\r\necho \"\"\r\nlog_warning \"Don't forget to:\"\r\nlog_warning \"1. Accept the EULA by changing 'eula=false' to 'eula=true' in eula.txt\"\r\nlog_warning \"2. Configure server settings in server.properties\"\r\nlog_warning \"3. Use the correct Java version for optimal performance\"\r\necho \"\"\r\nlog_info \"Check MOHIST_INFO.txt for detailed information\"\r\n\r\n# Final verification\r\nif [[ -f \"${SERVER_JARFILE}\" ]]; then\r\n    FILE_SIZE=$(stat -c%s \"${SERVER_JARFILE}\" 2>/dev/null || stat -f%z \"${SERVER_JARFILE}\" 2>/dev/null || echo 0)\r\n    log_success \"Final verification: ${SERVER_JARFILE} exists (${FILE_SIZE} bytes)\"\r\nelse\r\n    log_error \"Final verification failed: ${SERVER_JARFILE} not found!\"\r\n    exit 3\r\nfi\r\n\r\necho \"\"\r\nlog_success \"Ready to start your Mohist server!\"\r\necho \"\"",
+            "container": "ubuntu:22.04",
+            "entrypoint": "bash"
         }
     },
     "variables": [
         {
             "name": "Server Jar File",
-            "description": "The name of the server jarfile to run the server with.",
+            "description": "The name of the server jar file to run. Will automatically add .jar extension if missing.",
             "env_variable": "SERVER_JARFILE",
-            "default_value": "mohist.jar",
-            "user_viewable": 1,
-            "user_editable": 1,
-            "rules": "required|regex:\/^([\\w\\d._-]+)(\\.jar)$\/"
+            "default_value": "mohist-server.jar",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:50",
+            "field_type": "text"
+        },
+        {
+            "name": "Minecraft Version",
+            "description": "The Minecraft version to install. Supported versions:1.12.2, 1.16.5, 1.18.2, 1.19.2, 1.19.4, 1.20.1, 1.20.2, 1.21.1, 1.21.4",
+            "env_variable": "MC_VERSION",
+            "default_value": "1.20.1",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|in:1.12.2,1.16.5,1.18.2,1.19.2,1.19.4,1.20.1,1.20.2,1.21.1,1.21.4",
+            "field_type": "text"
+        },
+        {
+            "name": "Build Type",
+            "description": "Choose between 'latest' (newest build) or 'recommended' (stable build). Only used when Mohist Version is empty.",
+            "env_variable": "BUILD_TYPE",
+            "default_value": "latest",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|in:latest,recommended",
+            "field_type": "text"
+        },
+        {
+            "name": "Mohist Version (Optional)",
+            "description": "Specific Mohist version to download (e.g., '1.20.1-547'). Leave empty to use Build Type selection. Overrides MC Version and Build Type if specified.",
+            "env_variable": "MOHIST_VERSION",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:20",
+            "field_type": "text"
+        },
+        {
+            "name": "Initial Memory",
+            "description": "The initial amount of memory (RAM) to allocate to the server in MB. Should be less than or equal to maximum memory.",
+            "env_variable": "START_MEMORY",
+            "default_value": "512",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|numeric|min:128|max:65536",
+            "field_type": "text"
+        },
+        {
+            "name": "Additional Java Arguments",
+            "description": "Additional JVM arguments for performance tuning. Advanced users only. Example: -XX:+UseG1GC -XX:+ParallelRefProcEnabled",
+            "env_variable": "JAVA_ARGS",
+            "default_value": "-XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:200",
+            "field_type": "text"
+        },
+        {
+            "name": "Server Arguments",
+            "description": "Additional arguments to pass to the Mohist server. Example: --nogui --world myworld",
+            "env_variable": "SERVER_ARGS",
+            "default_value": "--nogui",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:100",
+            "field_type": "text"
+        },
+        {
+            "name": "Enable Automatic Restarts",
+            "description": "Enable automatic server restarts on crashes. Requires additional setup.",
+            "env_variable": "AUTO_RESTART",
+            "default_value": "false",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|in:true,false",
+            "field_type": "text"
         }
     ]
 }
